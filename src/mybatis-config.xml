@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+	
+	
+	<configuration>
+		<properties resource="db.properties"/>
+		
+		<typeAliases>
+			<typeAlias type="survey.vo.Board" alias="board"/>
+			<typeAlias type="survey.vo.Reply" alias="reply"/>
+			<typeAlias type="survey.vo.Person" alias="person"/>
+			<typeAlias type="survey.vo.Admin" alias="admin"/>
+			<typeAlias type="survey.vo.User" alias="user"/>
+			<typeAlias type="survey.vo.Q_sheet" alias="qsheet"/>
+			<typeAlias type="survey.vo.Answer" alias="answer"/>
+			<typeAlias type="survey.vo.Choice" alias="choice"/>
+			
+			
+			
+		</typeAliases>
+		
+		
+		<environments default="development">
+			<environment id="development">
+				<transactionManager type="JDBC"/>
+					<dataSource type="POOLED">
+						<property name="driver" value="${driver}"/>
+						<property name="url" value="${url}"/>
+						<property name="username" value="${username}"/>
+						<property name="password" value="${password}"/>
+					</dataSource>
+			</environment>
+		</environments>
+				
+	<mappers>
+	<mapper resource="SurveyMapper.xml"/>
+	</mappers>
+	</configuration>

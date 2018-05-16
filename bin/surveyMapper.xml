@@ -1,0 +1,414 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  
+<mapper namespace="survey.dao.SurveyMapper">
+
+<!-- 사용자 -->
+<insert id="insertPerson" parameterType="person">
+	insert into person (
+		num
+		,name
+		,age
+		,phone
+		,address
+	) values (
+		person_seq.nextval
+		,#{name}
+		,#{age}
+		,#{phone}
+		,#{address}
+	)
+	<selectKey resultType="int" keyProperty="num" order="AFTER"> 
+		SELECT person_seq.currval FROM dual
+	</selectKey>
+</insert>
+
+
+<insert id="insertUser" parameterType="user">
+	insert into userinfo (
+		user_num
+		,num
+		,user_id
+		,user_pwd
+		,card
+	)values(
+		user_seq.nextval
+		,#{num}
+		,#{user_id}
+		,#{user_pwd}
+		,#{card}
+	)
+</insert>
+
+
+<select id="loginUser" parameterType="user" resultType="user">
+	select
+		user_num
+		,num
+		,user_id
+		,user_pwd
+		,card
+	from 
+		userinfo
+	where
+		user_id = #{user_id}
+		and user_pwd = #{user_pwd}
+</select>
+
+<select id="selectUser" parameterType="hashmap" resultType="user">
+	select
+		p.num
+		,p.name
+		,p.age
+		,p.phone
+		,p.address
+		,u.user_num
+		,u.user_id
+		,u.card
+	from
+		person p, userinfo u
+	
+	<where>
+		p.num = u.num
+	and
+		<if test="col==1">
+			p.name like '%' || #{text} || '%'
+		</if>
+		<if test="col==2">
+			u.user_id like '%' || #{text} || '%'
+		</if>
+	</where>
+</select>
+
+<delete id="deleteUser" parameterType="int">
+	delete from
+		person
+	where
+		num = #{num}
+</delete>
+
+
+<update id="updateUser" parameterType="user">
+	update userinfo
+		set
+		user_id = #{user_id}
+		,user_pwd = #{user_pwd}
+		,card = #{card}
+	where	
+		num = #{num}
+
+</update>
+
+
+<select id="selectFile" parameterType="int" resultType="answer">
+select *
+from
+	answer
+where
+	user_num = #{user_num}
+</select>
+
+
+<!-- 관리자 -->
+<insert id="insertAdmin" parameterType="admin">
+	insert into admin (
+		admin_num
+		,num
+		,admin_id
+		,admin_pwd
+	)values(
+		admin_seq.nextval
+		,#{num}
+		,#{admin_id}
+		,#{admin_pwd}
+	)
+</insert>
+
+<select id="loginAdmin" parameterType="admin" resultType="admin">
+	select
+		admin_id
+		,admin_pwd
+	from
+		admin
+	where
+		admin_id = #{admin_id}
+		and admin_pwd = #{admin_pwd}
+</select>
+
+
+
+<!-- 설문관련 SQL -->
+
+<insert id="insertQsheet" parameterType="qsheet">
+	   insert into q_sheet (
+	   	q_code
+	   	,q_type
+	   	,q_num
+	   	,q_text
+	   	,a_type
+	   	)values(
+	   	q_sheet_seq.nextval
+	   	,#{q_type}
+	   	,#{q_num}
+	   	,#{q_text}
+	   	,#{a_type}
+	 )
+	 <selectKey resultType="int" keyProperty="q_num" order="AFTER"> 
+		SELECT q_num FROM q_sheet
+	</selectKey>
+</insert>
+
+<insert id="insertChoice" parameterType="choice">
+insert into choice (
+	answer_num
+	,q_num
+	,card
+	,choice_num
+	,answer_text
+	) values(
+	choice_seq.nextval
+	,#{q_num}
+	,#{card}
+	,#{choice_num}
+	,#{answer_text}
+)
+</insert>
+
+
+
+<select id="selectQsheet" resultType="qsheet">
+	select
+		q_num
+		,q_text
+	from q_sheet
+	where q_type like '34%'
+	order by q_num
+</select>
+
+<select id="selectChoice" resultType="choice">
+	select
+		q_num
+		,choice_num
+		,answer_text
+	from choice
+	where card like '34%'
+	order by answer_num 
+</select>
+
+<insert id="insertAnswer" parameterType="answer">
+	insert into
+		answer
+	(
+		reply_number
+		,q_code
+		,answer_num
+		,user_num
+	)values(
+		answer_seq.nextval
+		,#{q_code}
+		,#{answer_num}
+		,#{user_num}
+	)
+</insert>
+
+
+<select id="selectQsheets" resultType="qsheet">
+	select
+		q_num
+		,q_text
+	from Q_sheet
+	where q_type like '33%'
+	order by q_num
+</select>
+
+<select id="selectChoices" resultType="choice">
+	select
+		q_num
+		,choice_num
+		,answer_text
+	from choice
+	where card like '33%'
+	order by answer_num 
+</select>
+
+
+
+<select id="getChoice" parameterType="hashmap" resultType="hashmap">
+select 
+	qs.q_num qn
+	,qs.q_text qt
+	,an.answer_num an
+	,ch.answer_text at
+from 
+	q_sheet qs, answer an,choice ch
+where 
+    qs.q_code = an.q_code 
+and 
+    an.q_code = ch.q_num
+and
+    an.ANSWER_NUM = ch.CHOICE_NUM
+and 
+    an.user_num = #{user_num}
+order by qs.q_num
+</select>
+
+
+
+
+<update id="updateQsheet" parameterType="qsheet">
+update
+	q_sheet
+set
+	q_type = #{q_type}
+	,q_text = #{q_text}
+	,a_type = #{a_type}
+where
+	q_num = #{q_num}
+</update>
+
+
+<delete id="deleteQsheet" parameterType="int">
+	delete from
+		q_sheet
+	where
+		q_num = #{q_num}
+</delete>
+
+
+
+<delete id="deleteChoice" parameterType="int">
+	delete from
+		choice
+	where
+		q_num = #{q_num}
+</delete>
+
+<update id="updateAnswer" parameterType="answer">
+	update
+		answer
+	set
+		answer_num = #{answer_num}
+	where
+		q_code = #{q_code}
+	and
+		user_num = #{user_num}
+</update>
+
+
+
+<!-- 게시판 SQL -->
+
+<insert id="insertBoard" parameterType="board">
+	insert into board (
+		board_num
+		,board_title
+		,board_content
+		,board_name
+	)values(
+		board_seq.nextval
+		,#{board_title}
+		,#{board_content}
+		,#{board_name}
+	)
+</insert>
+
+<insert id="insertReply" parameterType="reply">
+	insert into reply (
+		reply_num
+		,board_num
+		,reply_name
+		,reply_text
+	)values(
+		reply_seq.nextval
+		,#{board_num}
+		,#{reply_name}
+		,#{reply_text}
+	)
+</insert>
+
+<select id="selectAll" resultType="board">
+	select 
+		board_num
+		,board_title
+		,board_name
+		,to_char(board_date,'YY/MM/DD') board_date
+	 from 
+	 	board
+	 order by
+	 	board_num desc
+</select>
+
+<select id="selectTop" resultType="board">
+	select
+		board_num
+		,board_title
+		,board_name
+		,board_hit
+	from
+		board
+	order by board_hit desc
+</select>
+
+
+<select id="selectNum" parameterType="int" resultType="board">
+	select
+			board_num
+			,board_title
+			,board_name
+			,to_char(board_date,'YY/MM/DD') board_date
+			,board_content
+			,board_hit
+	from
+			board
+	where 
+			board_num = #{board_num}
+</select>
+		
+		
+		
+<update id="updateHit" parameterType="int">
+	update
+		board
+	set
+		board_hit = board_hit + 1
+	where
+		board_num = #{board_num}
+</update>		
+		
+		
+		
+<delete id="deleteBoard" parameterType="int">
+	delete
+			board
+		where
+			board_num = #{board_num}
+</delete>
+
+
+
+
+<select id="selectSearch" parameterType="hashmap" resultType="board">
+	select
+		board_num
+		,board_title
+		,board_name
+		,to_char(board_date,'YY/MM/DD') board_date
+	from
+		board
+	<where>
+		<if test="col==1">
+			board_title like '%' || #{text} || '%'
+		</if>
+		<if test="col==2">
+			board_content like '%' || #{text} || '%'
+		</if>
+		<if test="col==3">
+			board_name like '%' || #{text} || '%'
+		</if>
+	</where>
+</select>
+
+</mapper>
